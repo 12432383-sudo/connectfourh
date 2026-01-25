@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.5f6e3cf7242f4ea38dbeacb0757256da',
+  appId: 'app.lovable.connectfour',
   appName: 'Connect Four',
   webDir: 'dist',
   
@@ -20,10 +20,16 @@ const config: CapacitorConfig = {
       androidScaleType: 'CENTER_CROP',
       splashFullScreen: true,
       splashImmersive: true,
+      // Use the generated splash screen
+      androidSplashResourceName: 'splash',
+      iosSplashResourceName: 'Splash Screen',
     },
     StatusBar: {
       style: 'DARK',
       backgroundColor: '#0f1729',
+    },
+    Haptics: {
+      // Haptics are enabled by default
     },
     // AdMob configuration (replace with your real IDs for production)
     AdMob: {
