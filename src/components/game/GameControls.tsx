@@ -1,11 +1,13 @@
 import { motion } from 'framer-motion';
-import { Difficulty } from '@/hooks/useGameLogic';
+import { Difficulty, GameMode } from '@/hooks/useGameLogic';
 import { Button } from '@/components/ui/button';
-import { RotateCcw, Trash2, Volume2, VolumeX } from 'lucide-react';
+import { RotateCcw, Trash2, Volume2, VolumeX, Bot, Users } from 'lucide-react';
 
 interface GameControlsProps {
   difficulty: Difficulty;
   onDifficultyChange: (difficulty: Difficulty) => void;
+  gameMode: GameMode;
+  onGameModeChange: (mode: GameMode) => void;
   onResetGame: () => void;
   onResetStats: () => void;
   soundEnabled: boolean;
@@ -16,6 +18,8 @@ interface GameControlsProps {
 export const GameControls = ({
   difficulty,
   onDifficultyChange,
+  gameMode,
+  onGameModeChange,
   onResetGame,
   onResetStats,
   soundEnabled,
@@ -28,6 +32,11 @@ export const GameControls = ({
     { value: 'hard', label: 'Hard' },
   ];
 
+  const gameModes: { value: GameMode; label: string; icon: React.ReactNode }[] = [
+    { value: 'ai', label: 'vs AI', icon: <Bot className="w-4 h-4" /> },
+    { value: 'local', label: '2 Players', icon: <Users className="w-4 h-4" /> },
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -35,25 +44,48 @@ export const GameControls = ({
       transition={{ delay: 0.3 }}
       className="space-y-4"
     >
-      {/* Difficulty selector */}
+      {/* Game mode selector */}
       <div className="flex items-center justify-center gap-2">
-        {difficulties.map(({ value, label }) => (
+        {gameModes.map(({ value, label, icon }) => (
           <button
             key={value}
-            onClick={() => onDifficultyChange(value)}
+            onClick={() => onGameModeChange(value)}
             className={`
-              px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+              flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
               ${
-                difficulty === value
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                gameMode === value
+                  ? 'bg-accent text-accent-foreground'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted/80'
               }
             `}
           >
+            {icon}
             {label}
           </button>
         ))}
       </div>
+
+      {/* Difficulty selector (only show for AI mode) */}
+      {gameMode === 'ai' && (
+        <div className="flex items-center justify-center gap-2">
+          {difficulties.map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => onDifficultyChange(value)}
+              className={`
+                px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                ${
+                  difficulty === value
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }
+              `}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Action buttons */}
       <div className="flex items-center justify-center gap-3">

@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 export type Player = 1 | 2 | null;
 export type Board = Player[][];
 export type Difficulty = 'easy' | 'medium' | 'hard';
+export type GameMode = 'ai' | 'local';
 
 const ROWS = 6;
 const COLS = 7;
@@ -207,10 +208,17 @@ export interface GameState {
   winningCells: number[][] | null;
   isGameOver: boolean;
   lastMove: { row: number; col: number } | null;
-  stats: { wins: number; losses: number; draws: number };
+  stats: { 
+    player1Wins: number; 
+    player2Wins: number; 
+    draws: number;
+    // Legacy stats for AI mode
+    wins: number;
+    losses: number;
+  };
 }
 
-export const useGameLogic = (difficulty: Difficulty) => {
+export const useGameLogic = (difficulty: Difficulty, gameMode: GameMode) => {
   const [gameState, setGameState] = useState<GameState>({
     board: createEmptyBoard(),
     currentPlayer: 1,
@@ -218,20 +226,24 @@ export const useGameLogic = (difficulty: Difficulty) => {
     winningCells: null,
     isGameOver: false,
     lastMove: null,
-    stats: { wins: 0, losses: 0, draws: 0 },
+    stats: { player1Wins: 0, player2Wins: 0, draws: 0, wins: 0, losses: 0 },
   });
   
   const [isAIThinking, setIsAIThinking] = useState(false);
 
   const dropDisc = useCallback((col: number) => {
-    if (gameState.isGameOver || gameState.currentPlayer !== 1 || isAIThinking) return;
+    if (gameState.isGameOver || isAIThinking) return;
     
+    // In AI mode, only player 1 can drop manually
+    if (gameMode === 'ai' && gameState.currentPlayer !== 1) return;
+    
+    const currentPlayer = gameState.currentPlayer;
     const newBoard = gameState.board.map(row => [...row]);
     let dropRow = -1;
     
     for (let row = ROWS - 1; row >= 0; row--) {
       if (newBoard[row][col] === null) {
-        newBoard[row][col] = 1;
+        newBoard[row][col] = currentPlayer;
         dropRow = row;
         break;
       }
@@ -239,18 +251,24 @@ export const useGameLogic = (difficulty: Difficulty) => {
     
     if (dropRow === -1) return;
     
-    const winCells = checkWin(newBoard, dropRow, col, 1);
+    const winCells = checkWin(newBoard, dropRow, col, currentPlayer);
     const validMoves = getValidMoves(newBoard);
     
     if (winCells) {
       setGameState(prev => ({
         ...prev,
         board: newBoard,
-        winner: 1,
+        winner: currentPlayer,
         winningCells: winCells,
         isGameOver: true,
         lastMove: { row: dropRow, col },
-        stats: { ...prev.stats, wins: prev.stats.wins + 1 },
+        stats: {
+          ...prev.stats,
+          player1Wins: currentPlayer === 1 ? prev.stats.player1Wins + 1 : prev.stats.player1Wins,
+          player2Wins: currentPlayer === 2 ? prev.stats.player2Wins + 1 : prev.stats.player2Wins,
+          wins: gameMode === 'ai' && currentPlayer === 1 ? prev.stats.wins + 1 : prev.stats.wins,
+          losses: gameMode === 'ai' && currentPlayer === 2 ? prev.stats.losses + 1 : prev.stats.losses,
+        },
       }));
       return;
     }
@@ -266,66 +284,74 @@ export const useGameLogic = (difficulty: Difficulty) => {
       return;
     }
     
+    const nextPlayer: Player = currentPlayer === 1 ? 2 : 1;
+    
     setGameState(prev => ({
       ...prev,
       board: newBoard,
-      currentPlayer: 2,
+      currentPlayer: nextPlayer,
       lastMove: { row: dropRow, col },
     }));
     
-    // AI turn
-    setIsAIThinking(true);
-    setTimeout(() => {
-      const aiCol = getAIMove(newBoard, difficulty);
-      if (aiCol === -1) {
-        setIsAIThinking(false);
-        return;
-      }
-      
-      const aiBoard = newBoard.map(row => [...row]);
-      let aiRow = -1;
-      
-      for (let row = ROWS - 1; row >= 0; row--) {
-        if (aiBoard[row][aiCol] === null) {
-          aiBoard[row][aiCol] = 2;
-          aiRow = row;
-          break;
+    // AI turn (only in AI mode when it's player 2's turn)
+    if (gameMode === 'ai' && nextPlayer === 2) {
+      setIsAIThinking(true);
+      setTimeout(() => {
+        const aiCol = getAIMove(newBoard, difficulty);
+        if (aiCol === -1) {
+          setIsAIThinking(false);
+          return;
         }
-      }
-      
-      const aiWinCells = checkWin(aiBoard, aiRow, aiCol, 2);
-      const aiValidMoves = getValidMoves(aiBoard);
-      
-      if (aiWinCells) {
-        setGameState(prev => ({
-          ...prev,
-          board: aiBoard,
-          winner: 2,
-          winningCells: aiWinCells,
-          isGameOver: true,
-          lastMove: { row: aiRow, col: aiCol },
-          stats: { ...prev.stats, losses: prev.stats.losses + 1 },
-        }));
-      } else if (aiValidMoves.length === 0) {
-        setGameState(prev => ({
-          ...prev,
-          board: aiBoard,
-          isGameOver: true,
-          lastMove: { row: aiRow, col: aiCol },
-          stats: { ...prev.stats, draws: prev.stats.draws + 1 },
-        }));
-      } else {
-        setGameState(prev => ({
-          ...prev,
-          board: aiBoard,
-          currentPlayer: 1,
-          lastMove: { row: aiRow, col: aiCol },
-        }));
-      }
-      
-      setIsAIThinking(false);
-    }, 500);
-  }, [gameState, difficulty, isAIThinking]);
+        
+        const aiBoard = newBoard.map(row => [...row]);
+        let aiRow = -1;
+        
+        for (let row = ROWS - 1; row >= 0; row--) {
+          if (aiBoard[row][aiCol] === null) {
+            aiBoard[row][aiCol] = 2;
+            aiRow = row;
+            break;
+          }
+        }
+        
+        const aiWinCells = checkWin(aiBoard, aiRow, aiCol, 2);
+        const aiValidMoves = getValidMoves(aiBoard);
+        
+        if (aiWinCells) {
+          setGameState(prev => ({
+            ...prev,
+            board: aiBoard,
+            winner: 2,
+            winningCells: aiWinCells,
+            isGameOver: true,
+            lastMove: { row: aiRow, col: aiCol },
+            stats: { 
+              ...prev.stats, 
+              losses: prev.stats.losses + 1,
+              player2Wins: prev.stats.player2Wins + 1,
+            },
+          }));
+        } else if (aiValidMoves.length === 0) {
+          setGameState(prev => ({
+            ...prev,
+            board: aiBoard,
+            isGameOver: true,
+            lastMove: { row: aiRow, col: aiCol },
+            stats: { ...prev.stats, draws: prev.stats.draws + 1 },
+          }));
+        } else {
+          setGameState(prev => ({
+            ...prev,
+            board: aiBoard,
+            currentPlayer: 1,
+            lastMove: { row: aiRow, col: aiCol },
+          }));
+        }
+        
+        setIsAIThinking(false);
+      }, 500);
+    }
+  }, [gameState, difficulty, gameMode, isAIThinking]);
 
   const resetGame = useCallback(() => {
     setGameState(prev => ({
@@ -342,7 +368,7 @@ export const useGameLogic = (difficulty: Difficulty) => {
   const resetStats = useCallback(() => {
     setGameState(prev => ({
       ...prev,
-      stats: { wins: 0, losses: 0, draws: 0 },
+      stats: { player1Wins: 0, player2Wins: 0, draws: 0, wins: 0, losses: 0 },
     }));
   }, []);
 

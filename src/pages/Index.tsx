@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { useGameLogic, Difficulty } from '@/hooks/useGameLogic';
+import { useGameLogic, Difficulty, GameMode } from '@/hooks/useGameLogic';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useAdMob } from '@/hooks/useAdMob';
 import { GameBoard } from '@/components/game/GameBoard';
@@ -10,10 +10,11 @@ import { AdBanner } from '@/components/game/AdBanner';
 
 const Index = () => {
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
+  const [gameMode, setGameMode] = useState<GameMode>('ai');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [gamesPlayed, setGamesPlayed] = useState(0);
   
-  const { gameState, dropDisc, resetGame, resetStats, isAIThinking } = useGameLogic(difficulty);
+  const { gameState, dropDisc, resetGame, resetStats, isAIThinking } = useGameLogic(difficulty, gameMode);
   const { playSound } = useSoundEffects(soundEnabled);
   const { showInterstitial, isInterstitialLoaded } = useAdMob();
   
@@ -36,21 +37,37 @@ const Index = () => {
     if (gameState.isGameOver && !prevIsGameOverRef.current) {
       setGamesPlayed(prev => prev + 1);
       
-      if (gameState.winner === 1) {
-        setTimeout(() => playSound('win'), 300);
-      } else if (gameState.winner === 2) {
-        setTimeout(() => playSound('lose'), 300);
+      if (gameMode === 'local') {
+        // In local mode, always play win sound for the winner
+        if (gameState.winner) {
+          setTimeout(() => playSound('win'), 300);
+        } else {
+          setTimeout(() => playSound('draw'), 300);
+        }
       } else {
-        setTimeout(() => playSound('draw'), 300);
+        // AI mode - win/lose based on player perspective
+        if (gameState.winner === 1) {
+          setTimeout(() => playSound('win'), 300);
+        } else if (gameState.winner === 2) {
+          setTimeout(() => playSound('lose'), 300);
+        } else {
+          setTimeout(() => playSound('draw'), 300);
+        }
       }
     }
     prevWinnerRef.current = gameState.winner;
     prevIsGameOverRef.current = gameState.isGameOver;
-  }, [gameState.isGameOver, gameState.winner, playSound]);
+  }, [gameState.isGameOver, gameState.winner, gameMode, playSound]);
 
   const handleDifficultyChange = useCallback((newDifficulty: Difficulty) => {
     playSound('click');
     setDifficulty(newDifficulty);
+    resetGame();
+  }, [resetGame, playSound]);
+
+  const handleGameModeChange = useCallback((newMode: GameMode) => {
+    playSound('click');
+    setGameMode(newMode);
     resetGame();
   }, [resetGame, playSound]);
 
@@ -93,6 +110,7 @@ const Index = () => {
             isGameOver={gameState.isGameOver}
             isAIThinking={isAIThinking}
             difficulty={difficulty}
+            gameMode={gameMode}
             stats={gameState.stats}
           />
 
@@ -101,13 +119,15 @@ const Index = () => {
             winningCells={gameState.winningCells}
             lastMove={gameState.lastMove}
             onColumnClick={handleColumnClick}
-            disabled={gameState.isGameOver || isAIThinking || gameState.currentPlayer !== 1}
+            disabled={gameState.isGameOver || isAIThinking}
             currentPlayer={gameState.currentPlayer}
           />
 
           <GameControls
             difficulty={difficulty}
             onDifficultyChange={handleDifficultyChange}
+            gameMode={gameMode}
+            onGameModeChange={handleGameModeChange}
             onResetGame={handleResetGame}
             onResetStats={handleResetStats}
             soundEnabled={soundEnabled}
