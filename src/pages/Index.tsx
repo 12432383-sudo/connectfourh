@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useGameLogic, Difficulty } from '@/hooks/useGameLogic';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { useAdMob } from '@/hooks/useAdMob';
 import { GameBoard } from '@/components/game/GameBoard';
 import { GameHeader } from '@/components/game/GameHeader';
 import { GameControls } from '@/components/game/GameControls';
@@ -10,9 +11,11 @@ import { AdBanner } from '@/components/game/AdBanner';
 const Index = () => {
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [gamesPlayed, setGamesPlayed] = useState(0);
   
   const { gameState, dropDisc, resetGame, resetStats, isAIThinking } = useGameLogic(difficulty);
   const { playSound } = useSoundEffects(soundEnabled);
+  const { showInterstitial, isInterstitialLoaded } = useAdMob();
   
   // Track previous state for sound effects
   const prevLastMoveRef = useRef(gameState.lastMove);
@@ -29,8 +32,10 @@ const Index = () => {
   }, [gameState.lastMove, playSound]);
 
   useEffect(() => {
-    // Win/Lose/Draw sounds
+    // Win/Lose/Draw sounds and track games played
     if (gameState.isGameOver && !prevIsGameOverRef.current) {
+      setGamesPlayed(prev => prev + 1);
+      
       if (gameState.winner === 1) {
         setTimeout(() => playSound('win'), 300);
       } else if (gameState.winner === 2) {
@@ -53,10 +58,16 @@ const Index = () => {
     setSoundEnabled(prev => !prev);
   }, []);
 
-  const handleResetGame = useCallback(() => {
+  const handleResetGame = useCallback(async () => {
     playSound('click');
+    
+    // Show interstitial ad every 3 games
+    if (gamesPlayed > 0 && gamesPlayed % 3 === 0 && isInterstitialLoaded) {
+      await showInterstitial();
+    }
+    
     resetGame();
-  }, [resetGame, playSound]);
+  }, [resetGame, playSound, gamesPlayed, isInterstitialLoaded, showInterstitial]);
 
   const handleResetStats = useCallback(() => {
     playSound('click');
