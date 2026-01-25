@@ -123,10 +123,10 @@ const PrivacyPolicy = () => {
             <p>
               If you have any questions about this privacy policy, please contact us at:{" "}
               <a 
-                href="mailto:support@connect4game.com" 
+                href="mailto:hikmatnoun14@gmail.com" 
                 className="text-primary hover:underline"
               >
-                support@connect4game.com
+                hikmatnoun14@gmail.com
               </a>
             </p>
           </section>
