@@ -2,36 +2,81 @@
 
 This folder contains promotional screenshots for iOS App Store and Google Play Store listings.
 
-## Generated Screenshots
+## Screenshot Assets
 
-| File | Description | Use For |
-|------|-------------|---------|
-| `screenshot-1-gameplay.png` | Active gameplay with score | Main listing screenshot |
-| `screenshot-2-victory.png` | Victory celebration screen | Feature highlight |
-| `screenshot-3-multiplayer.png` | 2-player local mode | Multiplayer feature |
-| `screenshot-4-ai-difficulty.png` | AI difficulty selection | AI feature showcase |
-| `feature-graphic.png` | Banner graphic (1024x500) | Google Play feature graphic |
+### iOS App Store (iPhone 16 Pro Max)
+
+| File | Description | Text Overlay |
+|------|-------------|--------------|
+| `appstore-1-gameplay.png` | Active gameplay with score | "Classic Strategy Fun" |
+| `appstore-2-victory.png` | Victory celebration screen | "Connect 4 to Win!" |
+| `appstore-3-multiplayer.png` | 2-player local mode | "Play with Friends" |
+| `appstore-4-ai.png` | AI difficulty selection | "Challenge Smart AI" |
+
+### Google Play Store (Android)
+
+| File | Description | Text Overlay |
+|------|-------------|--------------|
+| `android-1-gameplay.png` | Active gameplay with score | "Classic Strategy Fun" |
+| `android-2-victory.png` | Victory celebration screen | "Connect 4 to Win!" |
+| `android-3-multiplayer.png` | 2-player local mode | "Play with Friends" |
+| `android-4-ai.png` | AI difficulty selection | "Challenge Smart AI" |
+| `feature-graphic.png` | Banner graphic (1024x500) | "CONNECT 4 - Classic Strategy Fun" |
+
+### Raw Screenshots (No Device Frame)
+
+| File | Description |
+|------|-------------|
+| `screenshot-1-gameplay.png` | Raw gameplay screenshot |
+| `screenshot-2-victory.png` | Raw victory screen |
+| `screenshot-3-multiplayer.png` | Raw multiplayer mode |
+| `screenshot-4-ai-difficulty.png` | Raw AI difficulty screen |
 
 ## Required Sizes
 
 ### iOS App Store Screenshots
 
-| Device | Resolution | Required |
-|--------|------------|----------|
-| iPhone 6.7" | 1290 x 2796 | Yes |
-| iPhone 6.5" | 1284 x 2778 | Yes |
-| iPhone 5.5" | 1242 x 2208 | Optional |
-| iPad Pro 12.9" | 2048 x 2732 | If supporting iPad |
-| iPad Pro 11" | 1668 x 2388 | If supporting iPad |
+| Device | Resolution | Files to Use |
+|--------|------------|--------------|
+| iPhone 6.7" (Pro Max) | 1290 x 2796 | `appstore-*.png` |
+| iPhone 6.5" | 1284 x 2778 | Resize from appstore files |
+| iPhone 5.5" | 1242 x 2208 | Resize from appstore files |
 
 ### Google Play Store Screenshots
 
-| Type | Resolution | Required |
-|------|------------|----------|
-| Phone | 1080 x 1920 (min) | Yes |
-| 7" Tablet | 1200 x 1920 | If supporting tablets |
-| 10" Tablet | 1920 x 1200 | If supporting tablets |
-| Feature Graphic | 1024 x 500 | Yes |
+| Type | Resolution | Files to Use |
+|------|------------|--------------|
+| Phone | 1080 x 1920 | `android-*.png` |
+| Feature Graphic | 1024 x 500 | `feature-graphic.png` |
+
+## Upload Instructions
+
+### iOS App Store Connect
+
+1. Go to App Store Connect → Your App → App Information
+2. Navigate to the Screenshots section
+3. Upload `appstore-1-gameplay.png` through `appstore-4-ai.png`
+4. Arrange in order: Gameplay → Victory → Multiplayer → AI
+
+### Google Play Console
+
+1. Go to Google Play Console → Your App → Store Presence → Main store listing
+2. Upload `android-1-gameplay.png` through `android-4-ai.png` as Phone screenshots
+3. Upload `feature-graphic.png` as the Feature graphic
+4. Arrange screenshots in the same order as iOS
+
+## Screenshot Guidelines
+
+### Best Practices
+- First 3 screenshots are most important (shown in search results)
+- Show the game in action, not just menus
+- Highlight key features: AI, multiplayer, difficulty levels
+- Use consistent branding across all screenshots
+
+### Localization
+- Create localized versions for each supported language
+- Update text overlays to match the target language
+- Keep the same visual style and device frames
 
 ## Resizing Screenshots
 
@@ -41,49 +86,19 @@ Use ImageMagick to resize for different devices:
 # Install ImageMagick
 brew install imagemagick  # macOS
 
-# Resize for iPhone 6.7"
-convert screenshot-1-gameplay.png -resize 1290x2796! screenshot-1-iphone67.png
+# Resize iOS for iPhone 6.5"
+convert appstore-1-gameplay.png -resize 1284x2778! appstore-1-iphone65.png
 
-# Resize for iPhone 6.5"
-convert screenshot-1-gameplay.png -resize 1284x2778! screenshot-1-iphone65.png
-
-# Resize for Google Play (already correct size)
-# The generated screenshots are 1290x1920, which works for Play Store
+# Resize iOS for iPhone 5.5"
+convert appstore-1-gameplay.png -resize 1242x2208! appstore-1-iphone55.png
 ```
 
-## Screenshot Guidelines
+## File Checklist
 
-### iOS App Store
-- Maximum 10 screenshots per device size
-- First 3 screenshots are most important (shown in search)
-- Use portrait orientation for phones
-- Include localized screenshots for each language
+Before submitting to app stores, ensure you have:
 
-### Google Play Store
-- Minimum 2 screenshots, maximum 8
-- Feature graphic is required
-- Screenshots should showcase key features
-- Add promotional text overlays if desired
-
-## Best Practices
-
-1. **Show the game in action** - Not just menus
-2. **Highlight key features** - AI, multiplayer, difficulty levels
-3. **Use consistent branding** - Same color scheme as app
-4. **Add captions** - Brief text explaining each screen
-5. **Order strategically** - Best screenshots first
-
-## Adding Text Overlays
-
-For professional app store screenshots with text callouts, consider using:
-- [Previewed](https://previewed.app/) - Device mockup generator
-- [AppMockUp](https://app-mockup.com/) - Free screenshot frames
-- [Shotsnapp](https://shotsnapp.com/) - Device frame mockups
-- Figma/Canva - Custom text overlays
-
-## Usage in Store Listings
-
-1. Upload screenshots in the correct order in App Store Connect / Google Play Console
-2. Ensure screenshots are localized if your app supports multiple languages
-3. Update screenshots when you add major new features
-4. A/B test different screenshot sets to optimize conversion
+- [ ] 4 iOS screenshots with device frames
+- [ ] 4 Android screenshots with device frames  
+- [ ] 1 Feature graphic (1024x500)
+- [ ] Screenshots resized for all required device sizes
+- [ ] Localized versions (if supporting multiple languages)
