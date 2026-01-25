@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useGameLogic, Difficulty, GameMode } from '@/hooks/useGameLogic';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { useHaptics } from '@/hooks/useHaptics';
 import { useAdMob } from '@/hooks/useAdMob';
 import { GameBoard } from '@/components/game/GameBoard';
 import { GameHeader } from '@/components/game/GameHeader';
@@ -16,6 +17,7 @@ const Index = () => {
   
   const { gameState, dropDisc, resetGame, resetStats, isAIThinking } = useGameLogic(difficulty, gameMode);
   const { playSound } = useSoundEffects(soundEnabled);
+  const { impact, notification } = useHaptics(true);
   const { showInterstitial, isInterstitialLoaded } = useAdMob();
   
   // Track previous state for sound effects
@@ -23,14 +25,15 @@ const Index = () => {
   const prevWinnerRef = useRef(gameState.winner);
   const prevIsGameOverRef = useRef(gameState.isGameOver);
 
-  // Play sounds on game events
+  // Play sounds and haptics on game events
   useEffect(() => {
-    // Disc drop sound
+    // Disc drop sound + haptic
     if (gameState.lastMove && gameState.lastMove !== prevLastMoveRef.current) {
       playSound('drop');
+      impact('medium');
     }
     prevLastMoveRef.current = gameState.lastMove;
-  }, [gameState.lastMove, playSound]);
+  }, [gameState.lastMove, playSound, impact]);
 
   useEffect(() => {
     // Win/Lose/Draw sounds and track games played
@@ -38,18 +41,25 @@ const Index = () => {
       setGamesPlayed(prev => prev + 1);
       
       if (gameMode === 'local') {
-        // In local mode, always play win sound for the winner
         if (gameState.winner) {
-          setTimeout(() => playSound('win'), 300);
+          setTimeout(() => {
+            playSound('win');
+            notification('success');
+          }, 300);
         } else {
           setTimeout(() => playSound('draw'), 300);
         }
       } else {
-        // AI mode - win/lose based on player perspective
         if (gameState.winner === 1) {
-          setTimeout(() => playSound('win'), 300);
+          setTimeout(() => {
+            playSound('win');
+            notification('success');
+          }, 300);
         } else if (gameState.winner === 2) {
-          setTimeout(() => playSound('lose'), 300);
+          setTimeout(() => {
+            playSound('lose');
+            notification('error');
+          }, 300);
         } else {
           setTimeout(() => playSound('draw'), 300);
         }
@@ -57,26 +67,30 @@ const Index = () => {
     }
     prevWinnerRef.current = gameState.winner;
     prevIsGameOverRef.current = gameState.isGameOver;
-  }, [gameState.isGameOver, gameState.winner, gameMode, playSound]);
+  }, [gameState.isGameOver, gameState.winner, gameMode, playSound, notification]);
 
   const handleDifficultyChange = useCallback((newDifficulty: Difficulty) => {
     playSound('click');
+    impact('light');
     setDifficulty(newDifficulty);
     resetGame();
-  }, [resetGame, playSound]);
+  }, [resetGame, playSound, impact]);
 
   const handleGameModeChange = useCallback((newMode: GameMode) => {
     playSound('click');
+    impact('light');
     setGameMode(newMode);
     resetGame();
-  }, [resetGame, playSound]);
+  }, [resetGame, playSound, impact]);
 
   const handleToggleSound = useCallback(() => {
     setSoundEnabled(prev => !prev);
-  }, []);
+    impact('light');
+  }, [impact]);
 
   const handleResetGame = useCallback(async () => {
     playSound('click');
+    impact('light');
     
     // Show interstitial ad every 3 games
     if (gamesPlayed > 0 && gamesPlayed % 3 === 0 && isInterstitialLoaded) {
@@ -84,12 +98,13 @@ const Index = () => {
     }
     
     resetGame();
-  }, [resetGame, playSound, gamesPlayed, isInterstitialLoaded, showInterstitial]);
+  }, [resetGame, playSound, impact, gamesPlayed, isInterstitialLoaded, showInterstitial]);
 
   const handleResetStats = useCallback(() => {
     playSound('click');
+    impact('light');
     resetStats();
-  }, [resetStats, playSound]);
+  }, [resetStats, playSound, impact]);
 
   const handleColumnClick = useCallback((col: number) => {
     dropDisc(col);
