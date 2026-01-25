@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { useGameLogic, Difficulty, GameMode } from '@/hooks/useGameLogic';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useHaptics } from '@/hooks/useHaptics';
@@ -152,10 +153,19 @@ const Index = () => {
         </motion.div>
       </main>
 
-      {/* Ad banner at bottom */}
+      {/* Ad banner and footer */}
       <footer className="px-4 pb-4 pt-2">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-lg mx-auto space-y-4">
           <AdBanner />
+          <div className="flex justify-center gap-4 text-xs text-muted-foreground">
+            <Link to="/privacy" className="hover:text-foreground transition-colors">
+              Privacy Policy
+            </Link>
+            <span>•</span>
+            <Link to="/terms" className="hover:text-foreground transition-colors">
+              Terms of Service
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
