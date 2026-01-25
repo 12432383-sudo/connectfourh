@@ -1,6 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useGameLogic, Difficulty } from '@/hooks/useGameLogic';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { GameBoard } from '@/components/game/GameBoard';
 import { GameHeader } from '@/components/game/GameHeader';
 import { GameControls } from '@/components/game/GameControls';
@@ -11,15 +12,60 @@ const Index = () => {
   const [soundEnabled, setSoundEnabled] = useState(true);
   
   const { gameState, dropDisc, resetGame, resetStats, isAIThinking } = useGameLogic(difficulty);
+  const { playSound } = useSoundEffects(soundEnabled);
+  
+  // Track previous state for sound effects
+  const prevLastMoveRef = useRef(gameState.lastMove);
+  const prevWinnerRef = useRef(gameState.winner);
+  const prevIsGameOverRef = useRef(gameState.isGameOver);
+
+  // Play sounds on game events
+  useEffect(() => {
+    // Disc drop sound
+    if (gameState.lastMove && gameState.lastMove !== prevLastMoveRef.current) {
+      playSound('drop');
+    }
+    prevLastMoveRef.current = gameState.lastMove;
+  }, [gameState.lastMove, playSound]);
+
+  useEffect(() => {
+    // Win/Lose/Draw sounds
+    if (gameState.isGameOver && !prevIsGameOverRef.current) {
+      if (gameState.winner === 1) {
+        setTimeout(() => playSound('win'), 300);
+      } else if (gameState.winner === 2) {
+        setTimeout(() => playSound('lose'), 300);
+      } else {
+        setTimeout(() => playSound('draw'), 300);
+      }
+    }
+    prevWinnerRef.current = gameState.winner;
+    prevIsGameOverRef.current = gameState.isGameOver;
+  }, [gameState.isGameOver, gameState.winner, playSound]);
 
   const handleDifficultyChange = useCallback((newDifficulty: Difficulty) => {
+    playSound('click');
     setDifficulty(newDifficulty);
     resetGame();
-  }, [resetGame]);
+  }, [resetGame, playSound]);
 
   const handleToggleSound = useCallback(() => {
     setSoundEnabled(prev => !prev);
   }, []);
+
+  const handleResetGame = useCallback(() => {
+    playSound('click');
+    resetGame();
+  }, [resetGame, playSound]);
+
+  const handleResetStats = useCallback(() => {
+    playSound('click');
+    resetStats();
+  }, [resetStats, playSound]);
+
+  const handleColumnClick = useCallback((col: number) => {
+    dropDisc(col);
+  }, [dropDisc]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -43,7 +89,7 @@ const Index = () => {
             board={gameState.board}
             winningCells={gameState.winningCells}
             lastMove={gameState.lastMove}
-            onColumnClick={dropDisc}
+            onColumnClick={handleColumnClick}
             disabled={gameState.isGameOver || isAIThinking || gameState.currentPlayer !== 1}
             currentPlayer={gameState.currentPlayer}
           />
@@ -51,8 +97,8 @@ const Index = () => {
           <GameControls
             difficulty={difficulty}
             onDifficultyChange={handleDifficultyChange}
-            onResetGame={resetGame}
-            onResetStats={resetStats}
+            onResetGame={handleResetGame}
+            onResetStats={handleResetStats}
             soundEnabled={soundEnabled}
             onToggleSound={handleToggleSound}
             isGameOver={gameState.isGameOver}
