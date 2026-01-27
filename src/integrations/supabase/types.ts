@@ -252,6 +252,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      make_game_move: {
+        Args: { p_column: number; p_game_id: string; p_guest_id: string }
+        Returns: Json
+      }
       record_game_result: {
         Args: {
           p_display_name: string
