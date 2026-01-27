@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Difficulty, GameMode } from '@/hooks/useGameLogic';
 import { Button } from '@/components/ui/button';
-import { RotateCcw, Trash2, Volume2, VolumeX, Bot, Users } from 'lucide-react';
+import { RotateCcw, Trash2, Volume2, VolumeX, Bot, Users, Wifi, Palette } from 'lucide-react';
 
 interface GameControlsProps {
   difficulty: Difficulty;
@@ -13,6 +14,7 @@ interface GameControlsProps {
   soundEnabled: boolean;
   onToggleSound: () => void;
   isGameOver: boolean;
+  onOpenShop?: () => void;
 }
 
 export const GameControls = ({
@@ -25,7 +27,10 @@ export const GameControls = ({
   soundEnabled,
   onToggleSound,
   isGameOver,
+  onOpenShop,
 }: GameControlsProps) => {
+  const navigate = useNavigate();
+  
   const difficulties: { value: Difficulty; label: string }[] = [
     { value: 'easy', label: 'Easy' },
     { value: 'medium', label: 'Medium' },
@@ -63,6 +68,15 @@ export const GameControls = ({
             {label}
           </button>
         ))}
+        
+        {/* Online mode button */}
+        <button
+          onClick={() => navigate('/online')}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-primary/20 text-primary hover:bg-primary/30"
+        >
+          <Wifi className="w-4 h-4" />
+          Online
+        </button>
       </div>
 
       {/* Difficulty selector (only show for AI mode) */}
@@ -101,6 +115,17 @@ export const GameControls = ({
             <VolumeX className="w-4 h-4" />
           )}
         </Button>
+
+        {onOpenShop && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onOpenShop}
+            className="gap-2"
+          >
+            <Palette className="w-4 h-4" />
+          </Button>
+        )}
 
         <Button
           onClick={onResetGame}

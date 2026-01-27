@@ -14,7 +14,126 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      matchmaking_queue: {
+        Row: {
+          created_at: string
+          game_id: string | null
+          guest_id: string
+          id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          game_id?: string | null
+          guest_id: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string | null
+          guest_id?: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      online_games: {
+        Row: {
+          board: Json
+          created_at: string
+          current_player: number
+          id: string
+          is_game_over: boolean
+          last_move: Json | null
+          player1_guest_id: string
+          player1_theme: Json | null
+          player2_guest_id: string | null
+          player2_theme: Json | null
+          status: string
+          updated_at: string
+          winner: number | null
+          winning_cells: Json | null
+        }
+        Insert: {
+          board?: Json
+          created_at?: string
+          current_player?: number
+          id?: string
+          is_game_over?: boolean
+          last_move?: Json | null
+          player1_guest_id: string
+          player1_theme?: Json | null
+          player2_guest_id?: string | null
+          player2_theme?: Json | null
+          status?: string
+          updated_at?: string
+          winner?: number | null
+          winning_cells?: Json | null
+        }
+        Update: {
+          board?: Json
+          created_at?: string
+          current_player?: number
+          id?: string
+          is_game_over?: boolean
+          last_move?: Json | null
+          player1_guest_id?: string
+          player1_theme?: Json | null
+          player2_guest_id?: string | null
+          player2_theme?: Json | null
+          status?: string
+          updated_at?: string
+          winner?: number | null
+          winning_cells?: Json | null
+        }
+        Relationships: []
+      }
+      themes: {
+        Row: {
+          background_gradient: string | null
+          board_color: string
+          created_at: string
+          description: string | null
+          disc_color_p1: string
+          disc_color_p2: string
+          disc_shape: string
+          id: string
+          is_free: boolean
+          name: string
+          price_coins: number
+        }
+        Insert: {
+          background_gradient?: string | null
+          board_color?: string
+          created_at?: string
+          description?: string | null
+          disc_color_p1?: string
+          disc_color_p2?: string
+          disc_shape?: string
+          id?: string
+          is_free?: boolean
+          name: string
+          price_coins?: number
+        }
+        Update: {
+          background_gradient?: string | null
+          board_color?: string
+          created_at?: string
+          description?: string | null
+          disc_color_p1?: string
+          disc_color_p2?: string
+          disc_shape?: string
+          id?: string
+          is_free?: boolean
+          name?: string
+          price_coins?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
