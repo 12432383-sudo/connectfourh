@@ -253,7 +253,12 @@ export type Database = {
     }
     Functions: {
       record_game_result: {
-        Args: { p_display_name: string; p_guest_id: string; p_result: string }
+        Args: {
+          p_display_name: string
+          p_game_id?: string
+          p_guest_id: string
+          p_result: string
+        }
         Returns: undefined
       }
     }
