@@ -92,6 +92,54 @@ export type Database = {
         }
         Relationships: []
       }
+      player_stats: {
+        Row: {
+          created_at: string
+          daily_reset_at: string
+          daily_wins: number
+          display_name: string | null
+          guest_id: string
+          id: string
+          last_win_at: string | null
+          total_draws: number
+          total_losses: number
+          total_wins: number
+          updated_at: string
+          weekly_reset_at: string
+          weekly_wins: number
+        }
+        Insert: {
+          created_at?: string
+          daily_reset_at?: string
+          daily_wins?: number
+          display_name?: string | null
+          guest_id: string
+          id?: string
+          last_win_at?: string | null
+          total_draws?: number
+          total_losses?: number
+          total_wins?: number
+          updated_at?: string
+          weekly_reset_at?: string
+          weekly_wins?: number
+        }
+        Update: {
+          created_at?: string
+          daily_reset_at?: string
+          daily_wins?: number
+          display_name?: string | null
+          guest_id?: string
+          id?: string
+          last_win_at?: string | null
+          total_draws?: number
+          total_losses?: number
+          total_wins?: number
+          updated_at?: string
+          weekly_reset_at?: string
+          weekly_wins?: number
+        }
+        Relationships: []
+      }
       themes: {
         Row: {
           background_gradient: string | null
@@ -139,7 +187,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      record_game_result: {
+        Args: { p_display_name: string; p_guest_id: string; p_result: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
