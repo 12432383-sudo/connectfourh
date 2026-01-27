@@ -1,14 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Trophy, Frown, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { OnlineMatchmaking } from '@/components/online/OnlineMatchmaking';
 import { OnlineGameBoard } from '@/components/online/OnlineGameBoard';
+import { Leaderboard } from '@/components/leaderboard/Leaderboard';
 import { useOnlineGame } from '@/hooks/useOnlineGame';
 import { useThemes } from '@/hooks/useThemes';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useHaptics } from '@/hooks/useHaptics';
+import { useGuestId } from '@/hooks/useGuestId';
+import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { AdBanner } from '@/components/game/AdBanner';
 
 const OnlineGame = () => {
@@ -16,6 +19,10 @@ const OnlineGame = () => {
   const { selectedTheme } = useThemes();
   const { playSound } = useSoundEffects(true);
   const { notification, impact } = useHaptics(true);
+  const guestId = useGuestId();
+  const { recordGameResult } = useLeaderboard();
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+  const hasRecordedResult = useRef(false);
 
   const {
     status,
@@ -28,20 +35,37 @@ const OnlineGame = () => {
     leaveGame,
   } = useOnlineGame(selectedTheme);
 
-  // Play sounds on game events
+  // Record game result and play sounds when game ends
   useEffect(() => {
-    if (game?.is_game_over) {
+    if (game?.is_game_over && guestId && !hasRecordedResult.current) {
+      hasRecordedResult.current = true;
+      
+      // Determine result
+      let result: 'win' | 'loss' | 'draw';
       if (game.winner === playerNumber) {
+        result = 'win';
         playSound('win');
         notification('success');
       } else if (game.winner) {
+        result = 'loss';
         playSound('lose');
         notification('error');
       } else {
+        result = 'draw';
         playSound('draw');
       }
+
+      // Record the result
+      recordGameResult(guestId, `Player ${guestId.slice(-6)}`, result);
     }
-  }, [game?.is_game_over, game?.winner, playerNumber, playSound, notification]);
+  }, [game?.is_game_over, game?.winner, playerNumber, guestId, playSound, notification, recordGameResult]);
+
+  // Reset recorded flag when starting new game
+  useEffect(() => {
+    if (status === 'searching' || status === 'idle') {
+      hasRecordedResult.current = false;
+    }
+  }, [status]);
 
   // Play drop sound when opponent makes a move
   useEffect(() => {
@@ -79,10 +103,19 @@ const OnlineGame = () => {
       }}
     >
       {/* Header */}
-      <header className="p-4">
+      <header className="p-4 flex justify-between items-center">
         <Button variant="ghost" size="sm" onClick={handleBack} className="gap-2">
           <ArrowLeft className="w-4 h-4" />
           Back
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => setIsLeaderboardOpen(true)}
+          className="gap-2"
+        >
+          <Trophy className="w-4 h-4" />
+          Leaderboard
         </Button>
       </header>
 
@@ -160,6 +193,10 @@ const OnlineGame = () => {
                     <Button onClick={handlePlayAgain}>
                       Play Again
                     </Button>
+                    <Button variant="outline" onClick={() => setIsLeaderboardOpen(true)}>
+                      <Trophy className="w-4 h-4 mr-2" />
+                      Ranks
+                    </Button>
                   </div>
                 </motion.div>
               )}
@@ -174,6 +211,13 @@ const OnlineGame = () => {
           <AdBanner />
         </div>
       </footer>
+
+      {/* Leaderboard Modal */}
+      <Leaderboard
+        isOpen={isLeaderboardOpen}
+        onClose={() => setIsLeaderboardOpen(false)}
+        myGuestId={guestId}
+      />
     </div>
   );
 };

@@ -6,11 +6,13 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useHaptics } from '@/hooks/useHaptics';
 import { useAdMob } from '@/hooks/useAdMob';
 import { useThemes } from '@/hooks/useThemes';
+import { useGuestId } from '@/hooks/useGuestId';
 import { GameBoard } from '@/components/game/GameBoard';
 import { GameHeader } from '@/components/game/GameHeader';
 import { GameControls } from '@/components/game/GameControls';
 import { AdBanner } from '@/components/game/AdBanner';
 import { ThemeShop } from '@/components/shop/ThemeShop';
+import { Leaderboard } from '@/components/leaderboard/Leaderboard';
 
 const Index = () => {
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
@@ -18,6 +20,9 @@ const Index = () => {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [gamesPlayed, setGamesPlayed] = useState(0);
   const [isShopOpen, setIsShopOpen] = useState(false);
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+  
+  const guestId = useGuestId();
   
   const { gameState, dropDisc, resetGame, resetStats, isAIThinking } = useGameLogic(difficulty, gameMode);
   const { playSound } = useSoundEffects(soundEnabled);
@@ -165,6 +170,7 @@ const Index = () => {
             onToggleSound={handleToggleSound}
             isGameOver={gameState.isGameOver}
             onOpenShop={() => setIsShopOpen(true)}
+            onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
           />
         </motion.div>
       </main>
@@ -194,6 +200,13 @@ const Index = () => {
         isThemeUnlocked={isThemeUnlocked}
         onUnlockTheme={unlockTheme}
         onSelectTheme={selectTheme}
+      />
+
+      {/* Leaderboard Modal */}
+      <Leaderboard
+        isOpen={isLeaderboardOpen}
+        onClose={() => setIsLeaderboardOpen(false)}
+        myGuestId={guestId}
       />
     </div>
   );

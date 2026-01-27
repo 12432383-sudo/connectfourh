@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Difficulty, GameMode } from '@/hooks/useGameLogic';
 import { Button } from '@/components/ui/button';
-import { RotateCcw, Trash2, Volume2, VolumeX, Bot, Users, Wifi, Palette } from 'lucide-react';
+import { RotateCcw, Trash2, Volume2, VolumeX, Bot, Users, Wifi, Palette, Trophy } from 'lucide-react';
 
 interface GameControlsProps {
   difficulty: Difficulty;
@@ -15,6 +15,7 @@ interface GameControlsProps {
   onToggleSound: () => void;
   isGameOver: boolean;
   onOpenShop?: () => void;
+  onOpenLeaderboard?: () => void;
 }
 
 export const GameControls = ({
@@ -28,6 +29,7 @@ export const GameControls = ({
   onToggleSound,
   isGameOver,
   onOpenShop,
+  onOpenLeaderboard,
 }: GameControlsProps) => {
   const navigate = useNavigate();
   
@@ -124,6 +126,17 @@ export const GameControls = ({
             className="gap-2"
           >
             <Palette className="w-4 h-4" />
+          </Button>
+        )}
+
+        {onOpenLeaderboard && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onOpenLeaderboard}
+            className="gap-2"
+          >
+            <Trophy className="w-4 h-4" />
           </Button>
         )}
 
