@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Difficulty, GameMode } from '@/hooks/useGameLogic';
 import { Button } from '@/components/ui/button';
-import { RotateCcw, Trash2, Volume2, VolumeX, Bot, Users, Wifi, Palette, Trophy } from 'lucide-react';
+import { RotateCcw, Trash2, Volume2, VolumeX, Bot, Users as UsersIcon, Wifi, Palette, Trophy, UserPlus } from 'lucide-react';
 
 interface GameControlsProps {
   difficulty: Difficulty;
@@ -16,6 +16,8 @@ interface GameControlsProps {
   isGameOver: boolean;
   onOpenShop?: () => void;
   onOpenLeaderboard?: () => void;
+  onOpenFriends?: () => void;
+  hasPendingChallenges?: boolean;
 }
 
 export const GameControls = ({
@@ -30,6 +32,8 @@ export const GameControls = ({
   isGameOver,
   onOpenShop,
   onOpenLeaderboard,
+  onOpenFriends,
+  hasPendingChallenges,
 }: GameControlsProps) => {
   const navigate = useNavigate();
   
@@ -41,7 +45,7 @@ export const GameControls = ({
 
   const gameModes: { value: GameMode; label: string; icon: React.ReactNode }[] = [
     { value: 'ai', label: 'vs AI', icon: <Bot className="w-4 h-4" /> },
-    { value: 'local', label: '2 Players', icon: <Users className="w-4 h-4" /> },
+    { value: 'local', label: '2 Players', icon: <UsersIcon className="w-4 h-4" /> },
   ];
 
   return (
@@ -137,6 +141,20 @@ export const GameControls = ({
             className="gap-2"
           >
             <Trophy className="w-4 h-4" />
+          </Button>
+        )}
+
+        {onOpenFriends && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onOpenFriends}
+            className="gap-2 relative"
+          >
+            <UserPlus className="w-4 h-4" />
+            {hasPendingChallenges && (
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full animate-pulse" />
+            )}
           </Button>
         )}
 

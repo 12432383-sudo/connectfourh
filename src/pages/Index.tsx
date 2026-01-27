@@ -1,28 +1,34 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useGameLogic, Difficulty, GameMode } from '@/hooks/useGameLogic';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useHaptics } from '@/hooks/useHaptics';
 import { useAdMob } from '@/hooks/useAdMob';
 import { useThemes } from '@/hooks/useThemes';
 import { useGuestId } from '@/hooks/useGuestId';
+import { useFriends } from '@/hooks/useFriends';
 import { GameBoard } from '@/components/game/GameBoard';
 import { GameHeader } from '@/components/game/GameHeader';
 import { GameControls } from '@/components/game/GameControls';
 import { AdBanner } from '@/components/game/AdBanner';
 import { ThemeShop } from '@/components/shop/ThemeShop';
 import { Leaderboard } from '@/components/leaderboard/Leaderboard';
+import { FriendsList } from '@/components/friends/FriendsList';
+import { ChallengeNotification } from '@/components/friends/ChallengeNotification';
 
 const Index = () => {
+  const navigate = useNavigate();
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [gameMode, setGameMode] = useState<GameMode>('ai');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [gamesPlayed, setGamesPlayed] = useState(0);
   const [isShopOpen, setIsShopOpen] = useState(false);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+  const [isFriendsOpen, setIsFriendsOpen] = useState(false);
   
   const guestId = useGuestId();
+  const { incomingChallenges } = useFriends();
   
   const { gameState, dropDisc, resetGame, resetStats, isAIThinking } = useGameLogic(difficulty, gameMode);
   const { playSound } = useSoundEffects(soundEnabled);
@@ -126,6 +132,10 @@ const Index = () => {
     dropDisc(col);
   }, [dropDisc]);
 
+  const handleNavigateToGame = useCallback((gameId: string) => {
+    navigate(`/online?gameId=${gameId}`);
+  }, [navigate]);
+
   return (
     <div
       className="min-h-screen flex flex-col"
@@ -133,6 +143,12 @@ const Index = () => {
         background: selectedTheme.background_gradient || `linear-gradient(135deg, ${selectedTheme.board_color} 0%, ${selectedTheme.board_color}dd 100%)`,
       }}
     >
+      {/* Challenge Notification */}
+      <ChallengeNotification
+        selectedTheme={selectedTheme}
+        onAccept={handleNavigateToGame}
+      />
+
       {/* Main game area */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-6 sm:py-8">
         <motion.div
@@ -171,6 +187,8 @@ const Index = () => {
             isGameOver={gameState.isGameOver}
             onOpenShop={() => setIsShopOpen(true)}
             onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
+            onOpenFriends={() => setIsFriendsOpen(true)}
+            hasPendingChallenges={incomingChallenges.length > 0}
           />
         </motion.div>
       </main>
@@ -207,6 +225,15 @@ const Index = () => {
         isOpen={isLeaderboardOpen}
         onClose={() => setIsLeaderboardOpen(false)}
         myGuestId={guestId}
+      />
+
+      {/* Friends Modal */}
+      <FriendsList
+        isOpen={isFriendsOpen}
+        onClose={() => setIsFriendsOpen(false)}
+        selectedTheme={selectedTheme}
+        onChallengeAccepted={handleNavigateToGame}
+        onChallengeSent={handleNavigateToGame}
       />
     </div>
   );

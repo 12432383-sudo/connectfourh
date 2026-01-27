@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trophy, Frown, Minus } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Trophy, Frown, Minus, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { OnlineMatchmaking } from '@/components/online/OnlineMatchmaking';
 import { OnlineGameBoard } from '@/components/online/OnlineGameBoard';
@@ -16,6 +16,9 @@ import { AdBanner } from '@/components/game/AdBanner';
 
 const OnlineGame = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const gameIdFromUrl = searchParams.get('gameId');
+  
   const { selectedTheme } = useThemes();
   const { playSound } = useSoundEffects(true);
   const { notification, impact } = useHaptics(true);
@@ -33,7 +36,15 @@ const OnlineGame = () => {
     makeMove,
     cancelSearch,
     leaveGame,
+    joinGame,
   } = useOnlineGame(selectedTheme);
+
+  // Auto-join game if gameId is in URL
+  useEffect(() => {
+    if (gameIdFromUrl && status === 'idle') {
+      joinGame(gameIdFromUrl);
+    }
+  }, [gameIdFromUrl, status, joinGame]);
 
   // Record game result and play sounds when game ends
   useEffect(() => {
@@ -144,6 +155,18 @@ const OnlineGame = () => {
               onFindMatch={findMatch}
               onCancel={cancelSearch}
             />
+          )}
+
+          {status === 'matched' && (
+            <div className="text-center space-y-4">
+              <div className="flex items-center justify-center gap-3">
+                <Clock className="w-6 h-6 text-primary animate-pulse" />
+                <span className="text-lg text-foreground">Waiting for opponent to accept...</span>
+              </div>
+              <Button variant="outline" onClick={handleBack}>
+                Cancel
+              </Button>
+            </div>
           )}
 
           {(status === 'playing' || status === 'finished') && game && (

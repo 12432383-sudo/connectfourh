@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      friends: {
+        Row: {
+          addressee_guest_id: string
+          created_at: string
+          id: string
+          requester_guest_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          addressee_guest_id: string
+          created_at?: string
+          id?: string
+          requester_guest_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          addressee_guest_id?: string
+          created_at?: string
+          id?: string
+          requester_guest_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      game_challenges: {
+        Row: {
+          challenged_guest_id: string
+          challenger_guest_id: string
+          created_at: string
+          expires_at: string
+          game_id: string | null
+          id: string
+          status: string
+        }
+        Insert: {
+          challenged_guest_id: string
+          challenger_guest_id: string
+          created_at?: string
+          expires_at?: string
+          game_id?: string | null
+          id?: string
+          status?: string
+        }
+        Update: {
+          challenged_guest_id?: string
+          challenger_guest_id?: string
+          created_at?: string
+          expires_at?: string
+          game_id?: string | null
+          id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_challenges_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "online_games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matchmaking_queue: {
         Row: {
           created_at: string
