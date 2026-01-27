@@ -224,41 +224,28 @@ export const useOnlineGame = (selectedTheme: Theme) => {
   }, [playerNumber]);
 
   const makeMove = useCallback(async (col: number) => {
-    if (!game || game.is_game_over) return;
+    if (!game || game.is_game_over || !guestId) return;
     if (game.current_player !== playerNumber) return;
 
-    const board = [...game.board.map(row => [...row])];
-    
-    // Find the lowest empty row in the column
-    let row = -1;
-    for (let r = 5; r >= 0; r--) {
-      if (board[r][col] === 0) {
-        row = r;
-        break;
+    try {
+      // Use server-side validated function for game moves
+      const { data, error } = await supabase.rpc('make_game_move', {
+        p_game_id: game.id,
+        p_guest_id: guestId,
+        p_column: col
+      });
+
+      if (error) {
+        console.error('Move error:', error.message);
+        return;
       }
+
+      // The game state will be updated via the realtime subscription
+      // No need to manually update local state here
+    } catch (err) {
+      console.error('Move failed:', err);
     }
-
-    if (row === -1) return; // Column is full
-
-    board[row][col] = playerNumber;
-
-    // Check for win
-    const { winner, winningCells } = checkWin(board, row, col, playerNumber);
-    const isDraw = !winner && board.every(r => r.every(c => c !== 0));
-
-    await supabase
-      .from('online_games')
-      .update({
-        board: board as unknown as Json,
-        current_player: playerNumber === 1 ? 2 : 1,
-        winner: winner ? playerNumber : null,
-        is_game_over: winner || isDraw,
-        winning_cells: winningCells as unknown as Json,
-        last_move: { row, col } as unknown as Json,
-        status: winner || isDraw ? 'finished' : 'playing',
-      })
-      .eq('id', game.id);
-  }, [game, playerNumber]);
+  }, [game, playerNumber, guestId]);
 
   const cancelSearch = useCallback(async () => {
     if (queueEntryRef.current) {
