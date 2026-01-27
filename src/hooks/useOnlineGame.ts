@@ -202,8 +202,11 @@ export const useOnlineGame = (selectedTheme: Theme) => {
             };
           });
 
+          // Update status based on game state
           if (updated.is_game_over) {
             setStatus('finished');
+          } else if (updated.status === 'playing') {
+            setStatus('playing');
           }
 
           // Update opponent theme if it changed
@@ -275,6 +278,57 @@ export const useOnlineGame = (selectedTheme: Theme) => {
     setOpponentTheme(null);
   }, []);
 
+  const joinGame = useCallback(async (gameId: string) => {
+    if (!guestId) return;
+
+    const { data: gameData, error } = await supabase
+      .from('online_games')
+      .select('*')
+      .eq('id', gameId)
+      .single();
+
+    if (error || !gameData) {
+      console.error('Error fetching game:', error);
+      setStatus('idle');
+      return;
+    }
+
+    // Determine player number
+    const isPlayer1 = gameData.player1_guest_id === guestId;
+    const isPlayer2 = gameData.player2_guest_id === guestId;
+
+    if (!isPlayer1 && !isPlayer2) {
+      console.error('Not a player in this game');
+      setStatus('idle');
+      return;
+    }
+
+    setPlayerNumber(isPlayer1 ? 1 : 2);
+    setGame({
+      ...gameData,
+      board: (gameData.board as Json) as number[][],
+      winning_cells: gameData.winning_cells as [number, number][] | null,
+      last_move: gameData.last_move as { row: number; col: number } | null,
+      player1_theme: gameData.player1_theme as unknown as Theme | null,
+      player2_theme: gameData.player2_theme as unknown as Theme | null,
+    });
+
+    // Set opponent theme
+    const oppTheme = isPlayer1 ? gameData.player2_theme : gameData.player1_theme;
+    if (oppTheme) {
+      setOpponentTheme(oppTheme as unknown as Theme);
+    }
+
+    // If game is waiting (challenge sent), set to matched status
+    if (gameData.status === 'waiting') {
+      setStatus('matched');
+    } else {
+      setStatus(gameData.is_game_over ? 'finished' : 'playing');
+    }
+
+    subscribeToGame(gameId);
+  }, [guestId, subscribeToGame]);
+
   return {
     status,
     game,
@@ -284,6 +338,7 @@ export const useOnlineGame = (selectedTheme: Theme) => {
     makeMove,
     cancelSearch,
     leaveGame,
+    joinGame,
   };
 };
 
