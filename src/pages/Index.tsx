@@ -8,6 +8,7 @@ import { useAdMob } from '@/hooks/useAdMob';
 import { useThemes } from '@/hooks/useThemes';
 import { useGuestId } from '@/hooks/useGuestId';
 import { useFriends } from '@/hooks/useFriends';
+import { useConfetti } from '@/hooks/useConfetti';
 import { GameBoard } from '@/components/game/GameBoard';
 import { GameHeader } from '@/components/game/GameHeader';
 import { GameControls } from '@/components/game/GameControls';
@@ -34,6 +35,7 @@ const Index = () => {
   const { playSound } = useSoundEffects(soundEnabled);
   const { impact, notification } = useHaptics(true);
   const { showInterstitial, isInterstitialLoaded } = useAdMob();
+  const { fireConfetti, fireFireworks } = useConfetti();
   const {
     themes,
     selectedTheme,
@@ -67,6 +69,7 @@ const Index = () => {
           setTimeout(() => {
             playSound('win');
             notification('success');
+            fireFireworks();
           }, 300);
         } else {
           setTimeout(() => playSound('draw'), 300);
@@ -76,6 +79,7 @@ const Index = () => {
           setTimeout(() => {
             playSound('win');
             notification('success');
+            fireConfetti();
           }, 300);
         } else if (gameState.winner === 2) {
           setTimeout(() => {
@@ -89,7 +93,7 @@ const Index = () => {
     }
     prevWinnerRef.current = gameState.winner;
     prevIsGameOverRef.current = gameState.isGameOver;
-  }, [gameState.isGameOver, gameState.winner, gameMode, playSound, notification]);
+  }, [gameState.isGameOver, gameState.winner, gameMode, playSound, notification, fireConfetti, fireFireworks]);
 
   const handleDifficultyChange = useCallback((newDifficulty: Difficulty) => {
     playSound('click');
