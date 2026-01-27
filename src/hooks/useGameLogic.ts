@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
+import { getAIMove, recordAILoss, checkWin, getValidMoves } from '@/lib/aiEngine';
 
 export type Player = 1 | 2 | null;
 export type Board = Player[][];
@@ -10,196 +11,6 @@ const COLS = 7;
 
 const createEmptyBoard = (): Board => 
   Array(ROWS).fill(null).map(() => Array(COLS).fill(null));
-
-const checkWin = (board: Board, row: number, col: number, player: Player): number[][] | null => {
-  if (!player) return null;
-  
-  const directions = [
-    [0, 1],   // horizontal
-    [1, 0],   // vertical
-    [1, 1],   // diagonal right
-    [1, -1],  // diagonal left
-  ];
-  
-  for (const [dr, dc] of directions) {
-    const cells: number[][] = [[row, col]];
-    
-    // Check positive direction
-    for (let i = 1; i < 4; i++) {
-      const r = row + dr * i;
-      const c = col + dc * i;
-      if (r >= 0 && r < ROWS && c >= 0 && c < COLS && board[r][c] === player) {
-        cells.push([r, c]);
-      } else break;
-    }
-    
-    // Check negative direction
-    for (let i = 1; i < 4; i++) {
-      const r = row - dr * i;
-      const c = col - dc * i;
-      if (r >= 0 && r < ROWS && c >= 0 && c < COLS && board[r][c] === player) {
-        cells.push([r, c]);
-      } else break;
-    }
-    
-    if (cells.length >= 4) return cells;
-  }
-  
-  return null;
-};
-
-const getValidMoves = (board: Board): number[] => {
-  const moves: number[] = [];
-  for (let col = 0; col < COLS; col++) {
-    if (board[0][col] === null) moves.push(col);
-  }
-  return moves;
-};
-
-const evaluateWindow = (window: Player[], player: Player): number => {
-  const opponent = player === 1 ? 2 : 1;
-  const playerCount = window.filter(c => c === player).length;
-  const opponentCount = window.filter(c => c === opponent).length;
-  const emptyCount = window.filter(c => c === null).length;
-  
-  if (playerCount === 4) return 100;
-  if (playerCount === 3 && emptyCount === 1) return 5;
-  if (playerCount === 2 && emptyCount === 2) return 2;
-  if (opponentCount === 3 && emptyCount === 1) return -4;
-  
-  return 0;
-};
-
-const evaluateBoard = (board: Board, player: Player): number => {
-  let score = 0;
-  
-  // Center column preference
-  const centerCol = Math.floor(COLS / 2);
-  const centerCount = board.filter(row => row[centerCol] === player).length;
-  score += centerCount * 3;
-  
-  // Horizontal
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS - 3; c++) {
-      const window = [board[r][c], board[r][c+1], board[r][c+2], board[r][c+3]];
-      score += evaluateWindow(window, player);
-    }
-  }
-  
-  // Vertical
-  for (let c = 0; c < COLS; c++) {
-    for (let r = 0; r < ROWS - 3; r++) {
-      const window = [board[r][c], board[r+1][c], board[r+2][c], board[r+3][c]];
-      score += evaluateWindow(window, player);
-    }
-  }
-  
-  // Diagonal (positive slope)
-  for (let r = 0; r < ROWS - 3; r++) {
-    for (let c = 0; c < COLS - 3; c++) {
-      const window = [board[r][c], board[r+1][c+1], board[r+2][c+2], board[r+3][c+3]];
-      score += evaluateWindow(window, player);
-    }
-  }
-  
-  // Diagonal (negative slope)
-  for (let r = 3; r < ROWS; r++) {
-    for (let c = 0; c < COLS - 3; c++) {
-      const window = [board[r][c], board[r-1][c+1], board[r-2][c+2], board[r-3][c+3]];
-      score += evaluateWindow(window, player);
-    }
-  }
-  
-  return score;
-};
-
-const minimax = (
-  board: Board, 
-  depth: number, 
-  alpha: number, 
-  beta: number, 
-  maximizing: boolean,
-  aiPlayer: Player
-): [number, number] => {
-  const validMoves = getValidMoves(board);
-  const humanPlayer = aiPlayer === 1 ? 2 : 1;
-  
-  // Check terminal states
-  for (let col = 0; col < COLS; col++) {
-    for (let row = ROWS - 1; row >= 0; row--) {
-      if (board[row][col] !== null) {
-        if (checkWin(board, row, col, board[row][col])) {
-          if (board[row][col] === aiPlayer) return [null as any, 10000000];
-          return [null as any, -10000000];
-        }
-        break;
-      }
-    }
-  }
-  
-  if (validMoves.length === 0) return [null as any, 0];
-  if (depth === 0) return [null as any, evaluateBoard(board, aiPlayer)];
-  
-  if (maximizing) {
-    let value = -Infinity;
-    let bestCol = validMoves[Math.floor(Math.random() * validMoves.length)];
-    
-    for (const col of validMoves) {
-      const newBoard = board.map(row => [...row]);
-      for (let row = ROWS - 1; row >= 0; row--) {
-        if (newBoard[row][col] === null) {
-          newBoard[row][col] = aiPlayer;
-          break;
-        }
-      }
-      const [, score] = minimax(newBoard, depth - 1, alpha, beta, false, aiPlayer);
-      if (score > value) {
-        value = score;
-        bestCol = col;
-      }
-      alpha = Math.max(alpha, value);
-      if (alpha >= beta) break;
-    }
-    return [bestCol, value];
-  } else {
-    let value = Infinity;
-    let bestCol = validMoves[Math.floor(Math.random() * validMoves.length)];
-    
-    for (const col of validMoves) {
-      const newBoard = board.map(row => [...row]);
-      for (let row = ROWS - 1; row >= 0; row--) {
-        if (newBoard[row][col] === null) {
-          newBoard[row][col] = humanPlayer;
-          break;
-        }
-      }
-      const [, score] = minimax(newBoard, depth - 1, alpha, beta, true, aiPlayer);
-      if (score < value) {
-        value = score;
-        bestCol = col;
-      }
-      beta = Math.min(beta, value);
-      if (alpha >= beta) break;
-    }
-    return [bestCol, value];
-  }
-};
-
-const getAIMove = (board: Board, difficulty: Difficulty): number => {
-  const validMoves = getValidMoves(board);
-  if (validMoves.length === 0) return -1;
-  
-  const depthMap = { easy: 1, medium: 3, hard: 5 };
-  const depth = depthMap[difficulty];
-  
-  // Add randomness for easier difficulties
-  if (difficulty === 'easy' && Math.random() < 0.3) {
-    return validMoves[Math.floor(Math.random() * validMoves.length)];
-  }
-  
-  const [bestCol] = minimax(board, depth, -Infinity, Infinity, true, 2);
-  return bestCol;
-};
 
 export interface GameState {
   board: Board;
@@ -230,6 +41,9 @@ export const useGameLogic = (difficulty: Difficulty, gameMode: GameMode) => {
   });
   
   const [isAIThinking, setIsAIThinking] = useState(false);
+  
+  // Track player moves for learning
+  const playerMovesRef = useRef<number[]>([]);
 
   const dropDisc = useCallback((col: number) => {
     if (gameState.isGameOver || isAIThinking) return;
@@ -251,10 +65,20 @@ export const useGameLogic = (difficulty: Difficulty, gameMode: GameMode) => {
     
     if (dropRow === -1) return;
     
+    // Track player moves for learning (only in AI mode)
+    if (gameMode === 'ai' && currentPlayer === 1) {
+      playerMovesRef.current = [...playerMovesRef.current, col];
+    }
+    
     const winCells = checkWin(newBoard, dropRow, col, currentPlayer);
     const validMoves = getValidMoves(newBoard);
     
     if (winCells) {
+      // Player wins - record this pattern so AI learns from it
+      if (gameMode === 'ai' && currentPlayer === 1) {
+        recordAILoss(playerMovesRef.current, difficulty);
+      }
+      
       setGameState(prev => ({
         ...prev,
         board: newBoard,
@@ -297,7 +121,11 @@ export const useGameLogic = (difficulty: Difficulty, gameMode: GameMode) => {
     if (gameMode === 'ai' && nextPlayer === 2) {
       setIsAIThinking(true);
       setTimeout(() => {
-        const aiCol = getAIMove(newBoard, difficulty);
+        const aiCol = getAIMove(newBoard, difficulty, {
+          playerMoveHistory: playerMovesRef.current,
+          difficulty
+        });
+        
         if (aiCol === -1) {
           setIsAIThinking(false);
           return;
@@ -354,6 +182,9 @@ export const useGameLogic = (difficulty: Difficulty, gameMode: GameMode) => {
   }, [gameState, difficulty, gameMode, isAIThinking]);
 
   const resetGame = useCallback(() => {
+    // Clear player move history for new game
+    playerMovesRef.current = [];
+    
     setGameState(prev => ({
       ...prev,
       board: createEmptyBoard(),
