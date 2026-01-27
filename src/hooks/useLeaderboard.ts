@@ -83,12 +83,14 @@ export const useLeaderboard = () => {
   const recordGameResult = useCallback(async (
     guestId: string,
     displayName: string,
-    result: 'win' | 'loss' | 'draw'
+    result: 'win' | 'loss' | 'draw',
+    gameId?: string
   ) => {
     await supabase.rpc('record_game_result', {
       p_guest_id: guestId,
       p_display_name: displayName,
       p_result: result,
+      p_game_id: gameId || null,
     });
     
     // Refresh leaderboard after recording result

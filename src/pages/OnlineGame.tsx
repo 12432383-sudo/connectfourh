@@ -70,10 +70,10 @@ const OnlineGame = () => {
         playSound('draw');
       }
 
-      // Record the result
-      recordGameResult(guestId, `Player ${guestId.slice(-6)}`, result);
+      // Record the result with game_id for verification
+      recordGameResult(guestId, `Player ${guestId.slice(-6)}`, result, game.id);
     }
-  }, [game?.is_game_over, game?.winner, playerNumber, guestId, playSound, notification, recordGameResult, fireFireworks]);
+  }, [game?.is_game_over, game?.winner, game?.id, playerNumber, guestId, playSound, notification, recordGameResult, fireFireworks]);
 
   // Reset recorded flag when starting new game
   useEffect(() => {
