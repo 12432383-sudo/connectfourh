@@ -12,6 +12,7 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useHaptics } from '@/hooks/useHaptics';
 import { useGuestId } from '@/hooks/useGuestId';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
+import { useConfetti } from '@/hooks/useConfetti';
 import { AdBanner } from '@/components/game/AdBanner';
 
 const OnlineGame = () => {
@@ -24,6 +25,7 @@ const OnlineGame = () => {
   const { notification, impact } = useHaptics(true);
   const guestId = useGuestId();
   const { recordGameResult } = useLeaderboard();
+  const { fireConfetti, fireFireworks } = useConfetti();
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const hasRecordedResult = useRef(false);
 
@@ -57,6 +59,8 @@ const OnlineGame = () => {
         result = 'win';
         playSound('win');
         notification('success');
+        // Fire victory animation!
+        setTimeout(() => fireFireworks(), 300);
       } else if (game.winner) {
         result = 'loss';
         playSound('lose');
@@ -69,7 +73,7 @@ const OnlineGame = () => {
       // Record the result
       recordGameResult(guestId, `Player ${guestId.slice(-6)}`, result);
     }
-  }, [game?.is_game_over, game?.winner, playerNumber, guestId, playSound, notification, recordGameResult]);
+  }, [game?.is_game_over, game?.winner, playerNumber, guestId, playSound, notification, recordGameResult, fireFireworks]);
 
   // Reset recorded flag when starting new game
   useEffect(() => {
