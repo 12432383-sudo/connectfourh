@@ -5,21 +5,31 @@ import { useGameLogic, Difficulty, GameMode } from '@/hooks/useGameLogic';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useHaptics } from '@/hooks/useHaptics';
 import { useAdMob } from '@/hooks/useAdMob';
+import { useThemes } from '@/hooks/useThemes';
 import { GameBoard } from '@/components/game/GameBoard';
 import { GameHeader } from '@/components/game/GameHeader';
 import { GameControls } from '@/components/game/GameControls';
 import { AdBanner } from '@/components/game/AdBanner';
+import { ThemeShop } from '@/components/shop/ThemeShop';
 
 const Index = () => {
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [gameMode, setGameMode] = useState<GameMode>('ai');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [gamesPlayed, setGamesPlayed] = useState(0);
+  const [isShopOpen, setIsShopOpen] = useState(false);
   
   const { gameState, dropDisc, resetGame, resetStats, isAIThinking } = useGameLogic(difficulty, gameMode);
   const { playSound } = useSoundEffects(soundEnabled);
   const { impact, notification } = useHaptics(true);
   const { showInterstitial, isInterstitialLoaded } = useAdMob();
+  const {
+    themes,
+    selectedTheme,
+    isThemeUnlocked,
+    unlockTheme,
+    selectTheme,
+  } = useThemes();
   
   // Track previous state for sound effects
   const prevLastMoveRef = useRef(gameState.lastMove);
@@ -112,7 +122,12 @@ const Index = () => {
   }, [dropDisc]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div
+      className="min-h-screen flex flex-col"
+      style={{
+        background: selectedTheme.background_gradient || `linear-gradient(135deg, ${selectedTheme.board_color} 0%, ${selectedTheme.board_color}dd 100%)`,
+      }}
+    >
       {/* Main game area */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-6 sm:py-8">
         <motion.div
@@ -149,6 +164,7 @@ const Index = () => {
             soundEnabled={soundEnabled}
             onToggleSound={handleToggleSound}
             isGameOver={gameState.isGameOver}
+            onOpenShop={() => setIsShopOpen(true)}
           />
         </motion.div>
       </main>
@@ -168,6 +184,17 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      {/* Theme Shop Modal */}
+      <ThemeShop
+        isOpen={isShopOpen}
+        onClose={() => setIsShopOpen(false)}
+        themes={themes}
+        selectedTheme={selectedTheme}
+        isThemeUnlocked={isThemeUnlocked}
+        onUnlockTheme={unlockTheme}
+        onSelectTheme={selectTheme}
+      />
     </div>
   );
 };
