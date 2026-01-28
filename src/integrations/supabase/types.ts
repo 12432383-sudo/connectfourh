@@ -205,6 +205,27 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          action_type: string
+          created_at: string
+          guest_id: string
+          id: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          guest_id: string
+          id?: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          guest_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       themes: {
         Row: {
           background_gradient: string | null
@@ -252,6 +273,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: {
+          p_action_type: string
+          p_guest_id: string
+          p_max_requests: number
+          p_window_seconds: number
+        }
+        Returns: Json
+      }
       make_game_move: {
         Args: { p_column: number; p_game_id: string; p_guest_id: string }
         Returns: Json

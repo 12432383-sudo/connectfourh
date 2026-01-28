@@ -45,6 +45,20 @@ export const useOnlineGame = (selectedTheme: Theme) => {
   const findMatch = useCallback(async () => {
     if (!guestId) return;
     
+    // Check rate limit (1 matchmaking action per 3 seconds)
+    const { data: rateLimitResult } = await supabase.rpc('check_rate_limit', {
+      p_guest_id: guestId,
+      p_action_type: 'matchmaking',
+      p_max_requests: 1,
+      p_window_seconds: 3
+    });
+
+    const rateLimitData = rateLimitResult as { allowed: boolean; error?: string } | null;
+    if (rateLimitData && !rateLimitData.allowed) {
+      console.warn('Rate limited:', rateLimitData.error);
+      return;
+    }
+    
     setStatus('searching');
 
     // First, look for waiting players

@@ -119,6 +119,19 @@ export const useFriends = () => {
     if (!guestId) return { success: false, message: 'Not initialized' };
     if (friendCode === guestId) return { success: false, message: 'Cannot add yourself' };
 
+    // Check rate limit (10 friend requests per minute)
+    const { data: rateLimitResult } = await supabase.rpc('check_rate_limit', {
+      p_guest_id: guestId,
+      p_action_type: 'friend_request',
+      p_max_requests: 10,
+      p_window_seconds: 60
+    });
+
+    const rateLimitData = rateLimitResult as { allowed: boolean; error?: string } | null;
+    if (rateLimitData && !rateLimitData.allowed) {
+      return { success: false, message: rateLimitData.error || 'Too many requests. Please wait.' };
+    }
+
     // Check if player exists
     const { data: playerData } = await supabase
       .from('player_stats')
@@ -205,8 +218,21 @@ export const useFriends = () => {
     await fetchFriends();
   }, [fetchFriends]);
 
-  const challengeFriend = useCallback(async (friendGuestId: string, selectedTheme: Theme): Promise<{ success: boolean; gameId?: string }> => {
+  const challengeFriend = useCallback(async (friendGuestId: string, selectedTheme: Theme): Promise<{ success: boolean; gameId?: string; message?: string }> => {
     if (!guestId) return { success: false };
+
+    // Check rate limit (1 challenge per 3 seconds)
+    const { data: rateLimitResult } = await supabase.rpc('check_rate_limit', {
+      p_guest_id: guestId,
+      p_action_type: 'game_challenge',
+      p_max_requests: 1,
+      p_window_seconds: 3
+    });
+
+    const rateLimitData = rateLimitResult as { allowed: boolean; error?: string } | null;
+    if (rateLimitData && !rateLimitData.allowed) {
+      return { success: false, message: rateLimitData.error || 'Too many challenges. Please wait.' };
+    }
 
     // Create a new game
     const { data: newGame, error: gameError } = await supabase
