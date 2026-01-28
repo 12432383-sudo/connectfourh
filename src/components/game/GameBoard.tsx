@@ -37,15 +37,23 @@ export const GameBoard = ({
               <button
                 key={col}
                 onClick={() => onColumnClick(col)}
+                onTouchEnd={(e) => {
+                  // Ensure touch events work on mobile
+                  e.preventDefault();
+                  if (!disabled && board[0][col] === null) {
+                    onColumnClick(col);
+                  }
+                }}
                 disabled={disabled || board[0][col] !== null}
-                className="flex flex-col gap-1.5 sm:gap-2 group focus:outline-none"
+                className="flex flex-col gap-1.5 sm:gap-2 group focus:outline-none touch-manipulation"
                 aria-label={`Drop disc in column ${col + 1}`}
               >
-                {/* Hover indicator */}
+                {/* Hover indicator - pointer-events-none to prevent blocking clicks */}
                 <motion.div
                   className={`
                     w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full 
                     opacity-0 group-hover:opacity-60 transition-opacity duration-200
+                    pointer-events-none
                     ${currentPlayer === 1 ? 'bg-player1' : 'bg-player2'}
                     ${disabled || board[0][col] !== null ? 'group-hover:opacity-0' : ''}
                   `}
