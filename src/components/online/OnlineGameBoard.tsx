@@ -80,9 +80,16 @@ export const OnlineGameBoard = ({
                 whileHover={!disabled && cell === 0 ? { scale: 1.05 } : {}}
                 whileTap={!disabled && cell === 0 ? { scale: 0.95 } : {}}
                 onClick={() => !disabled && cell === 0 && onColumnClick(colIndex)}
+                onTouchEnd={(e) => {
+                  // Ensure touch events work on mobile
+                  if (!disabled && cell === 0) {
+                    e.preventDefault();
+                    onColumnClick(colIndex);
+                  }
+                }}
                 className={`
                   w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full 
-                  bg-black/30 flex items-center justify-center
+                  bg-black/30 flex items-center justify-center touch-manipulation
                   ${!disabled && cell === 0 ? 'cursor-pointer hover:bg-black/40' : ''}
                   ${disabled ? 'cursor-not-allowed' : ''}
                 `}
