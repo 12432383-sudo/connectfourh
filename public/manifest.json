@@ -1,0 +1,19 @@
+{
+  "name": "Connect Four",
+  "short_name": "Connect 4",
+  "description": "Classic strategy board game - Connect 4 to win!",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f1729",
+  "theme_color": "#0f1729",
+  "icons": [
+    {
+      "src": "/app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "entertainment"]
+}

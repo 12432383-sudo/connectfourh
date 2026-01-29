@@ -4,12 +4,25 @@ type SoundType = 'drop' | 'win' | 'lose' | 'draw' | 'click' | 'hover';
 
 export const useSoundEffects = (enabled: boolean) => {
   const audioContextRef = useRef<AudioContext | null>(null);
+  const activeOscillatorsRef = useRef<OscillatorNode[]>([]);
 
   const getAudioContext = useCallback(() => {
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
     return audioContextRef.current;
+  }, []);
+
+  // Stop all active sounds (for pause/background)
+  const stopAllSounds = useCallback(() => {
+    activeOscillatorsRef.current.forEach(osc => {
+      try {
+        osc.stop();
+      } catch {
+        // Already stopped
+      }
+    });
+    activeOscillatorsRef.current = [];
   }, []);
 
   const playTone = useCallback((
@@ -134,5 +147,5 @@ export const useSoundEffects = (enabled: boolean) => {
     }
   }, [playDrop, playWin, playLose, playDraw, playClick, playHover]);
 
-  return { playSound };
+  return { playSound, stopAllSounds };
 };

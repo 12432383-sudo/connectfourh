@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Difficulty, GameMode } from '@/hooks/useGameLogic';
 import { Button } from '@/components/ui/button';
-import { RotateCcw, Trash2, Volume2, VolumeX, Bot, Users as UsersIcon, Wifi, Palette, Trophy, UserPlus } from 'lucide-react';
+import { RotateCcw, Trash2, Volume2, VolumeX, Bot, Users as UsersIcon, Wifi, Palette, Trophy, UserPlus, Settings } from 'lucide-react';
 
 interface GameControlsProps {
   difficulty: Difficulty;
@@ -17,6 +17,7 @@ interface GameControlsProps {
   onOpenShop?: () => void;
   onOpenLeaderboard?: () => void;
   onOpenFriends?: () => void;
+  onOpenSettings?: () => void;
   hasPendingChallenges?: boolean;
 }
 
@@ -33,6 +34,7 @@ export const GameControls = ({
   onOpenShop,
   onOpenLeaderboard,
   onOpenFriends,
+  onOpenSettings,
   hasPendingChallenges,
 }: GameControlsProps) => {
   const navigate = useNavigate();
@@ -108,19 +110,17 @@ export const GameControls = ({
       )}
 
       {/* Action buttons */}
-      <div className="flex items-center justify-center gap-3">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onToggleSound}
-          className="gap-2"
-        >
-          {soundEnabled ? (
-            <Volume2 className="w-4 h-4" />
-          ) : (
-            <VolumeX className="w-4 h-4" />
-          )}
-        </Button>
+      <div className="flex items-center justify-center gap-3 flex-wrap">
+        {onOpenSettings && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onOpenSettings}
+            className="gap-2"
+          >
+            <Settings className="w-4 h-4" />
+          </Button>
+        )}
 
         {onOpenShop && (
           <Button

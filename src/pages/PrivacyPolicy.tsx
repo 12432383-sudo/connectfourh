@@ -14,7 +14,7 @@ const PrivacyPolicy = () => {
         </Link>
 
         <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
-        <p className="text-muted-foreground mb-8">Last updated: January 25, 2025</p>
+        <p className="text-muted-foreground mb-8">Last updated: January 29, 2025</p>
 
         <div className="space-y-6 text-foreground/90">
           <section>
@@ -29,12 +29,16 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-xl font-semibold mb-3">Information We Collect</h2>
             <p className="mb-3">
-              Connect 4 is designed with privacy in mind. We collect minimal information:
+              Connect Four is designed with privacy in mind. We collect minimal information:
             </p>
             <ul className="list-disc list-inside space-y-2 ml-4">
               <li>
-                <strong>Game Data:</strong> Your game scores and preferences are stored 
-                locally on your device and are not transmitted to our servers.
+                <strong>Game Data:</strong> Your game scores, preferences, and theme selections are stored 
+                locally on your device and synced to our servers for online play features.
+              </li>
+              <li>
+                <strong>Guest Identifier:</strong> A random identifier is generated for online 
+                matchmaking and leaderboards. This is not linked to personal information.
               </li>
               <li>
                 <strong>Device Information:</strong> Basic device information may be collected 
