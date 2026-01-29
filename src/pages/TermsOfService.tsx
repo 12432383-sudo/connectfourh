@@ -14,7 +14,7 @@ const TermsOfService = () => {
         </Link>
 
         <h1 className="text-3xl font-bold mb-2">Terms of Service</h1>
-        <p className="text-muted-foreground mb-8">Last updated: January 25, 2025</p>
+        <p className="text-muted-foreground mb-8">Last updated: January 29, 2025</p>
 
         <div className="space-y-6 text-foreground/90">
           <section>
@@ -29,9 +29,9 @@ const TermsOfService = () => {
           <section>
             <h2 className="text-xl font-semibold mb-3">2. Description of Service</h2>
             <p>
-              Connect 4 is a mobile game application that allows users to play the classic 
-              Connect Four board game. The App offers single-player mode against AI opponents 
-              and local two-player mode.
+              Connect Four is a mobile game application that allows users to play the classic 
+              Connect Four board game. The App offers single-player mode against AI opponents, 
+              local two-player mode, and online multiplayer with matchmaking and friend challenges.
             </p>
           </section>
 

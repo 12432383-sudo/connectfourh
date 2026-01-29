@@ -1,17 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-// AdMob test IDs (replace with real IDs for production)
+// PRODUCTION SETUP: Replace these test IDs with your real AdMob IDs
+// See ADMOB_SETUP.md for complete instructions
+const IS_PRODUCTION = false; // Set to true when ready for production
+
 export const AD_CONFIG = {
   // Test IDs provided by Google - safe to use during development
   android: {
     banner: 'ca-app-pub-3940256099942544/6300978111',
     interstitial: 'ca-app-pub-3940256099942544/1033173712',
-    appId: 'ca-app-pub-3940256099942544~3347511713', // Test App ID
+    appId: 'ca-app-pub-3940256099942544~3347511713',
   },
   ios: {
     banner: 'ca-app-pub-3940256099942544/2934735716',
     interstitial: 'ca-app-pub-3940256099942544/4411468910',
-    appId: 'ca-app-pub-3940256099942544~1458002511', // Test App ID
+    appId: 'ca-app-pub-3940256099942544~1458002511',
   },
 };
 
@@ -47,8 +50,8 @@ export const useAdMob = () => {
         }
 
         await AdMob.initialize({
-          testingDevices: ['DEVICE_ID'], // Add your test device IDs here
-          initializeForTesting: true, // Set to false for production
+          testingDevices: [], // Add your test device IDs here during development
+          initializeForTesting: !IS_PRODUCTION,
         });
 
         setIsInitialized(true);
@@ -75,7 +78,7 @@ export const useAdMob = () => {
         adSize: BannerAdSize.ADAPTIVE_BANNER,
         position: BannerAdPosition.BOTTOM_CENTER,
         margin: 0,
-        isTesting: true, // Set to false for production
+        isTesting: !IS_PRODUCTION,
       });
 
       setIsBannerVisible(true);
@@ -110,7 +113,7 @@ export const useAdMob = () => {
 
       await AdMob.prepareInterstitial({
         adId,
-        isTesting: true, // Set to false for production
+        isTesting: !IS_PRODUCTION,
       });
 
       setIsInterstitialLoaded(true);

@@ -9,6 +9,7 @@ import { useThemes } from '@/hooks/useThemes';
 import { useGuestId } from '@/hooks/useGuestId';
 import { useFriends } from '@/hooks/useFriends';
 import { useConfetti } from '@/hooks/useConfetti';
+import { useAppLifecycle } from '@/hooks/useAppLifecycle';
 import { GameBoard } from '@/components/game/GameBoard';
 import { GameHeader } from '@/components/game/GameHeader';
 import { GameControls } from '@/components/game/GameControls';
@@ -17,23 +18,26 @@ import { ThemeShop } from '@/components/shop/ThemeShop';
 import { Leaderboard } from '@/components/leaderboard/Leaderboard';
 import { FriendsList } from '@/components/friends/FriendsList';
 import { ChallengeNotification } from '@/components/friends/ChallengeNotification';
+import { SettingsMenu } from '@/components/game/SettingsMenu';
 
 const Index = () => {
   const navigate = useNavigate();
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [gameMode, setGameMode] = useState<GameMode>('ai');
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [gamesPlayed, setGamesPlayed] = useState(0);
   const [isShopOpen, setIsShopOpen] = useState(false);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [isFriendsOpen, setIsFriendsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   const guestId = useGuestId();
   const { incomingChallenges } = useFriends();
   
   const { gameState, dropDisc, resetGame, resetStats, isAIThinking } = useGameLogic(difficulty, gameMode);
-  const { playSound } = useSoundEffects(soundEnabled);
-  const { impact, notification } = useHaptics(true);
+  const { playSound, stopAllSounds } = useSoundEffects(soundEnabled);
+  const { impact, notification } = useHaptics(hapticsEnabled);
   const { showInterstitial, isInterstitialLoaded } = useAdMob();
   const { fireConfetti, fireFireworks } = useConfetti();
   const {
@@ -43,6 +47,24 @@ const Index = () => {
     unlockTheme,
     selectTheme,
   } = useThemes();
+
+  // Handle app lifecycle (pause/resume for native apps)
+  useAppLifecycle({
+    onPause: () => {
+      stopAllSounds?.();
+    },
+    onBackButton: () => {
+      // Handle back button: close modals if open, otherwise allow exit
+      if (isShopOpen || isLeaderboardOpen || isFriendsOpen || isSettingsOpen) {
+        setIsShopOpen(false);
+        setIsLeaderboardOpen(false);
+        setIsFriendsOpen(false);
+        setIsSettingsOpen(false);
+        return true; // Handled
+      }
+      return false; // Let default behavior (exit) happen
+    },
+  });
   
   // Track previous state for sound effects
   const prevLastMoveRef = useRef(gameState.lastMove);
@@ -113,6 +135,10 @@ const Index = () => {
     setSoundEnabled(prev => !prev);
     impact('light');
   }, [impact]);
+
+  const handleToggleHaptics = useCallback(() => {
+    setHapticsEnabled(prev => !prev);
+  }, []);
 
   const handleResetGame = useCallback(async () => {
     playSound('click');
@@ -192,6 +218,7 @@ const Index = () => {
             onOpenShop={() => setIsShopOpen(true)}
             onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
             onOpenFriends={() => setIsFriendsOpen(true)}
+            onOpenSettings={() => setIsSettingsOpen(true)}
             hasPendingChallenges={incomingChallenges.length > 0}
           />
         </motion.div>
@@ -238,6 +265,16 @@ const Index = () => {
         selectedTheme={selectedTheme}
         onChallengeAccepted={handleNavigateToGame}
         onChallengeSent={handleNavigateToGame}
+      />
+
+      {/* Settings Menu */}
+      <SettingsMenu
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        soundEnabled={soundEnabled}
+        onToggleSound={handleToggleSound}
+        hapticsEnabled={hapticsEnabled}
+        onToggleHaptics={handleToggleHaptics}
       />
     </div>
   );
